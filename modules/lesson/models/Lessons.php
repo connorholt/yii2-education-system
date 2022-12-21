@@ -95,7 +95,7 @@ class Lessons extends \yii\db\ActiveRecord
             ->where("user_id = :user_id", [":user_id" => Yii::$app->user->id]);
     }
 
-    public static function findWithPassion(): ActiveQuery
+    public static function findWithPassing(): ActiveQuery
     {
         return self::find()
             ->leftJoin("passing", "passing.lesson_id = lessons.id")

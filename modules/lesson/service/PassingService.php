@@ -10,13 +10,12 @@ class PassingService
 {
 
     public function allPassed(): bool {
-        return !Lessons::findWithPassion()
+        return !Lessons::findWithPassing()
             ->exists();
     }
 
-    // todo in model
     public function getNextLesson() {
-        return Lessons::findWithPassion()
+        return Lessons::findWithPassing()
             ->orderBy("lessons.id")
             ->one();
     }
