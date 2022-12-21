@@ -5,6 +5,7 @@ namespace app\modules\lesson\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "lessons".
@@ -27,13 +28,13 @@ class Lessons extends \yii\db\ActiveRecord
         return ArrayHelper::getValue(self::getStatusesArray(), $this->status);
     }
 
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return parent::find()
             ->where(['!=', 'lessons.status',  self::STATUS_DELETED]);
     }
 
-    public static function getStatusesArray()
+    public static function getStatusesArray(): array
     {
         return [
             self::STATUS_ACTIVE => 'Активен',
@@ -41,7 +42,7 @@ class Lessons extends \yii\db\ActiveRecord
         ];
     }
 
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -52,7 +53,7 @@ class Lessons extends \yii\db\ActiveRecord
         ];
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             TimestampBehavior::class,
@@ -62,7 +63,7 @@ class Lessons extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'lessons';
     }
@@ -70,7 +71,7 @@ class Lessons extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['title', 'video_url'], 'required'],
@@ -88,9 +89,20 @@ class Lessons extends \yii\db\ActiveRecord
         ];
     }
 
-    public function getPassing(): \yii\db\ActiveQuery
+    public function getPassing(): ActiveQuery
     {
         return $this->hasOne(Passing::class, ['lesson_id' => 'id'])
             ->where("user_id = :user_id", [":user_id" => Yii::$app->user->id]);
+    }
+
+    public static function findWithPassion(): ActiveQuery
+    {
+        return self::find()
+            ->leftJoin("passing", "passing.lesson_id = lessons.id")
+            ->andWhere("passing.id IS NULL")
+            ->andWhere(["or",
+                ["=", "passing.user_id", Yii::$app->user->id],
+                "passing.user_id IS NULL"
+            ]);
     }
 }

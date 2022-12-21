@@ -7,6 +7,7 @@ use yii\base\NotSupportedException;
 use yii\helpers\ArrayHelper;
 use yii\web\IdentityInterface;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "users".
@@ -35,12 +36,12 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return ArrayHelper::getValue(self::getStatusesArray(), $this->status);
     }
 
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return parent::find()->where('status != :deleted_status', [":deleted_status" => self::STATUS_DELETED]);
     }
 
-    public static function getStatusesArray()
+    public static function getStatusesArray(): array
     {
         return [
             self::STATUS_BLOCKED => 'Заблокирован',
@@ -49,19 +50,19 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         ];
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             TimestampBehavior::class,
         ];
     }
 
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'users';
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             ['username', 'required'],
@@ -78,7 +79,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         ];
     }
 
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -94,7 +95,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
     }
 
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($token, $type = null): ?IdentityInterface
     {
         throw new NotSupportedException('findIdentityByAccessToken is not implemented.');
     }
@@ -104,12 +105,12 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return $this->getPrimaryKey();
     }
 
-    public function getAuthKey()
+    public function getAuthKey(): ?string
     {
         return $this->auth_key;
     }
 
-    public function validateAuthKey($authKey)
+    public function validateAuthKey($authKey): bool
     {
         return $this->getAuthKey() === $authKey;
     }
@@ -120,7 +121,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
      * @param string $username
      * @return static|null
      */
-    public static function findByUsername($username)
+    public static function findByUsername($username): ?User
     {
         return static::findOne(['username' => $username]);
     }
@@ -131,7 +132,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
      * @param string $password password to validate
      * @return boolean if password provided is valid for current user
      */
-    public function validatePassword($password)
+    public function validatePassword($password): bool
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
@@ -152,7 +153,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         $this->auth_key = Yii::$app->security->generateRandomString();
     }
 
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
         if (parent::beforeSave($insert)) {
             if ($insert) {
@@ -163,7 +164,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return false;
     }
 
-    public function isUserAdmin()
+    public function isUserAdmin(): bool
     {
         return $this->role == static::ROLE_ADMIN;
     }
